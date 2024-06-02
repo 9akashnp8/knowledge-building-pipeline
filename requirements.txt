@@ -1,0 +1,4 @@
+click==8.1.7
+colorama==0.4.6
+PyMuPDF==1.24.4
+PyMuPDFb==1.24.3
