@@ -47,7 +47,7 @@ def extract_highlights(
     Main function that extract higlights from every page
     for given from_date upto to_date if provided
     """
-    highlights = ""
+    highlights = {}
     doc = fitz.open(pdf_path)
 
     # Convert dates into datetime for comparison
@@ -59,7 +59,6 @@ def extract_highlights(
 
     # Iterate through each page
     for page_num in range(len(doc)):
-
         page = doc.load_page(page_num)
         annots = page.annots()
 
@@ -67,9 +66,12 @@ def extract_highlights(
             rect = annot.rect
             annot_created_date = annot.info["creationDate"]
             date = format_annot_created_date(annot_created_date)
-
             if should_include_text(date, from_date, to_date):
                 text = page.get_text("text", clip=rect)
-                highlights += f"{text.strip()}\n\n"
-
+                str_date = date.strftime("%d-%m-%Y")
+                if str_date not in highlights:
+                    highlights.update({str(str_date): text})
+                else:
+                    highlights[str(str_date)] += f"{text}\n\n"
+                
     return highlights

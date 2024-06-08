@@ -1,3 +1,5 @@
+import json
+
 import click
 
 from functions import extract_highlights
@@ -24,8 +26,10 @@ from constants import PROMPT
 def run(file, output, from_date, to_date):
     output_file_name = output.name
     highlights = extract_highlights(file, from_date, to_date)
-    final_content = PROMPT.format(content=highlights)
+    final_content = PROMPT.format(content=''.join(highlights.values()))
     output.write(final_content)
+    with open('output.json', 'w') as f:
+        json.dump(highlights, f)
     click.secho(f"Done, Saved to {output_file_name}", fg='green')
 
 
