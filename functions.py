@@ -70,8 +70,8 @@ def extract_highlights(
                 text = page.get_text("text", clip=rect)
                 str_date = date.strftime("%d-%m-%Y")
                 if str_date not in highlights:
-                    highlights.update({str(str_date): text})
+                    highlights.update({str(str_date): [text]})
                 else:
-                    highlights[str(str_date)] += f"{text}\n\n"
-                
+                    highlights[str(str_date)].append(text)
+    
     return highlights
