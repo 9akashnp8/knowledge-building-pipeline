@@ -1,13 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+import type { HighlighAPIResponse } from './types'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [highlights, setHighlights] = useState<HighlighAPIResponse | []>([])
+
+  useEffect(() => {
+    async function getHighlights() {
+      fetch("http://localhost:8000/highlights?file_path=x")
+        .then(res => res.json())
+        .then(json => setHighlights(json))
+        .catch(err => console.log(err))
+    }
+    getHighlights()
+  }, [])
 
   return (
     <>
-      <h1>Hello World</h1>
+      {Object.entries(highlights).map(([key, value]) => {
+        return (
+          <div>
+            <h3>{key}</h3>
+            <ul>
+              {value.map(v => <li>{v}</li>)}
+            </ul>
+          </div>
+        )
+      })}
     </>
-  )g
+  )
 }
 
 export default App
