@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction, FormEvent } from 'react'
+import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction, FormEvent, MouseEvent } from 'react'
 
 import type { HighlighAPIResponse } from './types'
 
@@ -28,6 +28,7 @@ function SelectHighlightsDate({ highlights, setSelectHighlights }: Props) {
 
 function App() {
   const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({})
+  const [generatedPrompt, setGeneratedPrompt] = useState<string>("")
   const [selectHighlights, setSelectHighlights] = useState<HighlighAPIResponse | {}>({})
   
   useEffect(() => {
@@ -40,12 +41,35 @@ function App() {
     getHighlights()
   }, [])
 
-  function handleSelectHighlight(e: FormEvent) {
+  async function handleSelectHighlight(e: FormEvent) {
     e.preventDefault()
 
     const target = e.target as HTMLFormElement
     const formData = new FormData(target)
-    console.log(formData.getAll('selectedHighlight'))
+    const selectedHighlights = formData.getAll('selectedHighlight')
+  
+    const response = await fetch("http://localhost:8000/generate-prompt", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "text/plain"
+      },
+      body: JSON.stringify({ selected_highlights: selectedHighlights })
+    })
+    if (response.ok) {
+      const prompt = await response.text()
+      setGeneratedPrompt(prompt)
+      target.reset()
+    }
+  }
+
+  function copyPrompt(e: MouseEvent) {
+    e.preventDefault()
+    navigator.clipboard
+      .writeText(generatedPrompt)
+      .then(() => {
+        alert('Copied')
+      })
   }
 
   return (
@@ -62,6 +86,10 @@ function App() {
       })}
       <button>Generate Prompt</button>
       </form>
+      <div>
+        <p>{generatedPrompt}</p>
+        <button type='button' onClick={copyPrompt}>Copy</button>
+      </div>
     </>
   )
 }
