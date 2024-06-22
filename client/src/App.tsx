@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction } from 'react'
+import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction, FormEvent } from 'react'
 
 import type { HighlighAPIResponse } from './types'
 
@@ -40,16 +40,28 @@ function App() {
     getHighlights()
   }, [])
 
+  function handleSelectHighlight(e: FormEvent) {
+    e.preventDefault()
+
+    const target = e.target as HTMLFormElement
+    const formData = new FormData(target)
+    console.log(formData.getAll('selectedHighlight'))
+  }
+
   return (
     <>
       <SelectHighlightsDate highlights={highlights} setSelectHighlights={setSelectHighlights}  />
-      <ul>
-      {Object.values(selectHighlights).map((highlightData) => {
+      <form method='POST' onSubmit={handleSelectHighlight}>
+      {Object.values(selectHighlights).map((highlightData, index) => {
         return (
-          <li>{highlightData}</li>
+          <div key={index}>
+            <input type='checkbox' id={`highlightData-${index}`} name='selectedHighlight' value={highlightData} />
+            <label htmlFor={`highlightData-${index}`}>{highlightData}</label>
+          </div>
         )
       })}
-      </ul>
+      <button>Generate Prompt</button>
+      </form>
     </>
   )
 }
