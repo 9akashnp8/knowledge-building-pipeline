@@ -11,7 +11,8 @@ function SelectHighlightsDate({ highlights, setSelectHighlights }: Props) {
 
   function handleChange(e: ChangeEvent) {
     e.preventDefault()
-    const selectedDate = e.target.value;
+    const target = e.target as HTMLInputElement
+    const selectedDate = target.value;
     setSelectHighlights(highlights[selectedDate])
   }
 
@@ -26,8 +27,8 @@ function SelectHighlightsDate({ highlights, setSelectHighlights }: Props) {
 }
 
 function App() {
-  const [highlights, setHighlights] = useState<HighlighAPIResponse | []>([])
-  const [selectHighlights, setSelectHighlights] = useState<Highlight | []>([])
+  const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({})
+  const [selectHighlights, setSelectHighlights] = useState<HighlighAPIResponse | {}>({})
   
   useEffect(() => {
     async function getHighlights() {
