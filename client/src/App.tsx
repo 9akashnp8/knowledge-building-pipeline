@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction } from 'react'
+import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction, FormEvent } from 'react'
 
 import type { HighlighAPIResponse } from './types'
 
@@ -11,7 +11,8 @@ function SelectHighlightsDate({ highlights, setSelectHighlights }: Props) {
 
   function handleChange(e: ChangeEvent) {
     e.preventDefault()
-    const selectedDate = e.target.value;
+    const target = e.target as HTMLInputElement
+    const selectedDate = target.value;
     setSelectHighlights(highlights[selectedDate])
   }
 
@@ -26,8 +27,8 @@ function SelectHighlightsDate({ highlights, setSelectHighlights }: Props) {
 }
 
 function App() {
-  const [highlights, setHighlights] = useState<HighlighAPIResponse | []>([])
-  const [selectHighlights, setSelectHighlights] = useState<Highlight | []>([])
+  const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({})
+  const [selectHighlights, setSelectHighlights] = useState<HighlighAPIResponse | {}>({})
   
   useEffect(() => {
     async function getHighlights() {
@@ -39,16 +40,28 @@ function App() {
     getHighlights()
   }, [])
 
+  function handleSelectHighlight(e: FormEvent) {
+    e.preventDefault()
+
+    const target = e.target as HTMLFormElement
+    const formData = new FormData(target)
+    console.log(formData.getAll('selectedHighlight'))
+  }
+
   return (
     <>
       <SelectHighlightsDate highlights={highlights} setSelectHighlights={setSelectHighlights}  />
-      <ul>
-      {Object.values(selectHighlights).map((highlightData) => {
+      <form method='POST' onSubmit={handleSelectHighlight}>
+      {Object.values(selectHighlights).map((highlightData, index) => {
         return (
-          <li>{highlightData}</li>
+          <div key={index}>
+            <input type='checkbox' id={`highlightData-${index}`} name='selectedHighlight' value={highlightData} />
+            <label htmlFor={`highlightData-${index}`}>{highlightData}</label>
+          </div>
         )
       })}
-      </ul>
+      <button>Generate Prompt</button>
+      </form>
     </>
   )
 }
