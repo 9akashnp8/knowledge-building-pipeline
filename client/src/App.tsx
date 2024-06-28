@@ -76,13 +76,15 @@ function App() {
     <>
       <SelectHighlightsDate highlights={highlights} setSelectHighlights={setSelectHighlights}  />
       <form method='POST' onSubmit={handleSelectHighlight}>
-      {Object.values(selectHighlights).map((highlightData, index) => {
-        return (
-          <div key={index}>
-            <input type='checkbox' id={`highlightData-${index}`} name='selectedHighlight' value={highlightData} />
-            <label htmlFor={`highlightData-${index}`}>{highlightData}</label>
-          </div>
-        )
+      {Object.values(selectHighlights).map((chapterHighlights) => {
+        return Object.values(chapterHighlights).map((highlight, index) => {
+          return (
+            <div key={index}>
+              <input type='checkbox' id={`highlight-${index}`} name='selectedHighlight' value={highlight} />
+              <label htmlFor={`highlight-${index}`}>{highlight}</label>
+            </div>
+          )
+        })
       })}
       <button>Generate Prompt</button>
       </form>
