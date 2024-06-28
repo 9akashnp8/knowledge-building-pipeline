@@ -1,6 +1,6 @@
 
-type HighlightDate = string
+type Chapter = string
 
-type Highlights = string[]
+type Highlights = Record<string, string[]>
 
-export type HighlighAPIResponse = Record<HighlightDate, Highlights>
+export type HighlighAPIResponse = Record<Chapter, Highlights>
