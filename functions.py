@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import fitz
@@ -38,6 +39,25 @@ def should_include_text(
         return True
 
 
+def create_chapter_data(doc: fitz.Document):
+    """
+    Get details of chapters and their page
+    ranges
+    """
+    result = []
+    toc = doc.get_toc()
+    chapter_tocs = [
+        (chapter, start_page - 30) # 30 pages of pre book stuff not considered
+        for level, chapter, start_page in toc
+        if level == 2 and "chapter" in chapter.lower()
+    ]
+    for index, item in enumerate(chapter_tocs):
+        chapter, start_page = item
+        _, end_page = chapter_tocs[min(len(chapter_tocs) - 1, index + 1)]
+        result.append((chapter, start_page, end_page))
+    return result
+
+
 def extract_highlights(
     pdf_path: str,
     notes_from_date: str = None,
@@ -56,10 +76,25 @@ def extract_highlights(
         from_date = datetime.strptime(from_date, '%Y-%m-%d')
     if notes_upto_date:
         to_date = datetime.strptime(to_date, '%Y-%m-%d')
+    
+    chapter_page_range = create_chapter_data(doc)
 
     # Iterate through each page
     for page_num in range(len(doc)):
         page = doc.load_page(page_num)
+
+        # Extract Chapter
+        chapter = [
+            chapter for chapter, start, end in chapter_page_range
+            if start <= page_num <= end
+        ]
+        if not chapter:
+            chapter = "Unknown"
+        else:
+            chapter = chapter[0]
+        if chapter not in highlights:
+            highlights.update({chapter: {}})
+
         annots = page.annots()
 
         for annot in annots:
@@ -69,9 +104,9 @@ def extract_highlights(
             if should_include_text(date, from_date, to_date):
                 text = page.get_text("text", clip=rect)
                 str_date = date.strftime("%d-%m-%Y")
-                if str_date not in highlights:
-                    highlights.update({str(str_date): [text]})
+                if str(str_date) not in highlights[chapter]:
+                    highlights[chapter].update({str(str_date): [text]})
                 else:
-                    highlights[str(str_date)].append(text)
+                    highlights[chapter][str(str_date)].append(text)
     
     return highlights
