@@ -1,61 +1,9 @@
-import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction, FormEvent, MouseEvent } from 'react'
+import { useState, useEffect, FormEvent, MouseEvent } from 'react'
 
+import ChapterSelect from './components/ChapterSelect'
+import DateSelect from './components/DateSelect'
 import type { HighlighAPIResponse } from './types'
 
-type Props = {
-  selectedChapter: string,
-  highlights: HighlighAPIResponse,
-  setSelectHighlights: Dispatch<SetStateAction<any>>
-}
-
-function SelectHighlightsDate({ selectedChapter, highlights, setSelectHighlights }: Props) {
-
-  function handleChange(e: ChangeEvent) {
-    e.preventDefault()
-    const target = e.target as HTMLInputElement
-    const selectedDate = target.value;
-    if (selectedDate) {
-      setSelectHighlights(highlights[selectedChapter][selectedDate])
-    } else {
-      setSelectHighlights([])
-    }
-  }
-
-  return (
-    <select onChange={handleChange}>
-      <option value="">Select Date</option>
-      {selectedChapter && Object.keys(highlights[selectedChapter]).map((date) => {
-        return <option value={date}>{date}</option>
-      })}
-    </select>
-  )
-}
-
-type SelectChapterProps = {
-  chapters: string[],
-  setSelectedChaper: Dispatch<SetStateAction<string>>,
-  setSelectHighlights: Dispatch<SetStateAction<any>>
-}
-
-function ChapterSelect({ chapters, setSelectedChaper, setSelectHighlights }: SelectChapterProps) {
-
-  function handleChange(e: ChangeEvent) {
-    e.preventDefault()
-    setSelectHighlights([])
-    const target = e.target as HTMLInputElement
-    const selectedChapter = target.value;
-    setSelectedChaper(selectedChapter)
-  }
-
-  return (
-    <select onChange={handleChange}>
-      <option value="">Select Chapter</option>
-      {chapters.map((chapter) => {
-        return <option value={chapter}>{chapter}</option>
-      })}
-    </select>
-  )
-}
 
 function App() {
   const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({})
@@ -107,7 +55,7 @@ function App() {
   return (
     <>
       <ChapterSelect chapters={Object.keys(highlights)} setSelectedChaper={setSelectedChaper} setSelectHighlights={setSelectHighlights} />
-      <SelectHighlightsDate selectedChapter={selectedChaper} highlights={highlights} setSelectHighlights={setSelectHighlights}  />
+      <DateSelect selectedChapter={selectedChaper} highlights={highlights} setSelectHighlights={setSelectHighlights}  />
       <form method='POST' onSubmit={handleSelectHighlight}>
       {Object.values(selectHighlights).map((highlight, index) => {
         return (
