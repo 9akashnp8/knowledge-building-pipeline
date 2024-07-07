@@ -3,24 +3,55 @@ import { useState, useEffect, ChangeEvent, Dispatch, SetStateAction, FormEvent, 
 import type { HighlighAPIResponse } from './types'
 
 type Props = {
+  selectedChapter: string,
   highlights: HighlighAPIResponse,
   setSelectHighlights: Dispatch<SetStateAction<any>>
 }
 
-function SelectHighlightsDate({ highlights, setSelectHighlights }: Props) {
+function SelectHighlightsDate({ selectedChapter, highlights, setSelectHighlights }: Props) {
 
   function handleChange(e: ChangeEvent) {
     e.preventDefault()
     const target = e.target as HTMLInputElement
     const selectedDate = target.value;
-    setSelectHighlights(highlights[selectedDate])
+    if (selectedDate) {
+      setSelectHighlights(highlights[selectedChapter][selectedDate])
+    } else {
+      setSelectHighlights([])
+    }
   }
 
   return (
     <select onChange={handleChange}>
       <option value="">Select Date</option>
-      {Object.keys(highlights).map((date) => {
+      {selectedChapter && Object.keys(highlights[selectedChapter]).map((date) => {
         return <option value={date}>{date}</option>
+      })}
+    </select>
+  )
+}
+
+type SelectChapterProps = {
+  chapters: string[],
+  setSelectedChaper: Dispatch<SetStateAction<string>>,
+  setSelectHighlights: Dispatch<SetStateAction<any>>
+}
+
+function ChapterSelect({ chapters, setSelectedChaper, setSelectHighlights }: SelectChapterProps) {
+
+  function handleChange(e: ChangeEvent) {
+    e.preventDefault()
+    setSelectHighlights([])
+    const target = e.target as HTMLInputElement
+    const selectedChapter = target.value;
+    setSelectedChaper(selectedChapter)
+  }
+
+  return (
+    <select onChange={handleChange}>
+      <option value="">Select Chapter</option>
+      {chapters.map((chapter) => {
+        return <option value={chapter}>{chapter}</option>
       })}
     </select>
   )
@@ -28,8 +59,9 @@ function SelectHighlightsDate({ highlights, setSelectHighlights }: Props) {
 
 function App() {
   const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({})
+  const [ selectedChaper, setSelectedChaper ] = useState<string>("")
   const [generatedPrompt, setGeneratedPrompt] = useState<string>("")
-  const [selectHighlights, setSelectHighlights] = useState<HighlighAPIResponse | {}>({})
+  const [selectHighlights, setSelectHighlights] = useState<[]>([])
   
   useEffect(() => {
     async function getHighlights() {
@@ -74,17 +106,16 @@ function App() {
 
   return (
     <>
-      <SelectHighlightsDate highlights={highlights} setSelectHighlights={setSelectHighlights}  />
+      <ChapterSelect chapters={Object.keys(highlights)} setSelectedChaper={setSelectedChaper} setSelectHighlights={setSelectHighlights} />
+      <SelectHighlightsDate selectedChapter={selectedChaper} highlights={highlights} setSelectHighlights={setSelectHighlights}  />
       <form method='POST' onSubmit={handleSelectHighlight}>
-      {Object.values(selectHighlights).map((chapterHighlights) => {
-        return Object.values(chapterHighlights).map((highlight, index) => {
-          return (
-            <div key={index}>
-              <input type='checkbox' id={`highlight-${index}`} name='selectedHighlight' value={highlight} />
-              <label htmlFor={`highlight-${index}`}>{highlight}</label>
-            </div>
-          )
-        })
+      {Object.values(selectHighlights).map((highlight, index) => {
+        return (
+          <div key={index}>
+            <input type='checkbox' id={`highlight-${index}`} name='selectedHighlight' value={highlight} />
+            <label htmlFor={`highlight-${index}`}>{highlight}</label>
+          </div>
+        )
       })}
       <button>Generate Prompt</button>
       </form>
