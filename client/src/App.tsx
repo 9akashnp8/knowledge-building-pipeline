@@ -1,78 +1,98 @@
-import { useState, useEffect, FormEvent, MouseEvent } from 'react'
+import { useState, useEffect, MouseEvent, SyntheticEvent } from "react";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack"
+import Paper from "@mui/material/Paper"
 
-import ChapterSelect from './components/ChapterSelect'
-import DateSelect from './components/DateSelect'
-import type { HighlighAPIResponse } from './types'
-
+import ChapterSelect from "./components/ChapterSelect";
+import DateSelect from "./components/DateSelect";
+import type { HighlighAPIResponse } from "./types";
 
 function App() {
-  const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({})
-  const [ selectedChaper, setSelectedChaper ] = useState<string>("")
-  const [generatedPrompt, setGeneratedPrompt] = useState<string>("")
-  const [selectHighlights, setSelectHighlights] = useState<[]>([])
-  
+  const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({});
+  const [selectedChaper, setSelectedChaper] = useState<string>("");
+  const [generatedPrompt, setGeneratedPrompt] = useState<string>("");
+  const [selectHighlights, setSelectHighlights] = useState<[]>([]);
+
   useEffect(() => {
     async function getHighlights() {
       fetch("http://localhost:8000/highlights?file_path=x")
-        .then(res => res.json())
-        .then(json => setHighlights(json))
-        .catch(err => console.log(err))
+        .then((res) => res.json())
+        .then((json) => setHighlights(json))
+        .catch((err) => console.log(err));
     }
-    getHighlights()
-  }, [])
+    getHighlights();
+  }, []);
 
-  async function handleSelectHighlight(e: FormEvent) {
-    e.preventDefault()
+  async function handleSelectHighlight(e: SyntheticEvent) {
+    e.preventDefault();
 
-    const target = e.target as HTMLFormElement
-    const formData = new FormData(target)
-    const selectedHighlights = formData.getAll('selectedHighlight')
-  
+    const target = e.target as HTMLFormElement;
+    const formData = new FormData(target);
+    const selectedHighlights = formData.getAll("selectedHighlight");
+
     const response = await fetch("http://localhost:8000/generate-prompt", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "text/plain"
+        Accept: "text/plain",
       },
-      body: JSON.stringify({ selected_highlights: selectedHighlights })
-    })
+      body: JSON.stringify({ selected_highlights: selectedHighlights }),
+    });
     if (response.ok) {
-      const prompt = await response.text()
-      setGeneratedPrompt(prompt)
-      target.reset()
+      const prompt = await response.text();
+      setGeneratedPrompt(prompt);
     }
   }
 
   function copyPrompt(e: MouseEvent) {
-    e.preventDefault()
-    navigator.clipboard
-      .writeText(generatedPrompt)
-      .then(() => {
-        alert('Copied')
-      })
+    e.preventDefault();
+    navigator.clipboard.writeText(generatedPrompt).then(() => {
+      alert("Copied");
+    });
   }
 
   return (
-    <>
-      <ChapterSelect chapters={Object.keys(highlights)} setSelectedChaper={setSelectedChaper} setSelectHighlights={setSelectHighlights} />
-      <DateSelect selectedChapter={selectedChaper} highlights={highlights} setSelectHighlights={setSelectHighlights}  />
-      <form method='POST' onSubmit={handleSelectHighlight}>
-      {Object.values(selectHighlights).map((highlight, index) => {
-        return (
-          <div key={index}>
-            <input type='checkbox' id={`highlight-${index}`} name='selectedHighlight' value={highlight} />
-            <label htmlFor={`highlight-${index}`}>{highlight}</label>
-          </div>
-        )
-      })}
-      <button>Generate Prompt</button>
+    <Paper variant="elevation" sx={{ margin: "40px", padding: "20px", height: "90vh", overflow: "auto"}}>
+      <Stack direction={"row"} gap={2}>
+        <ChapterSelect
+          chapters={Object.keys(highlights)}
+          setSelectedChaper={setSelectedChaper}
+          setSelectHighlights={setSelectHighlights}
+        />
+        <DateSelect
+          selectedChapter={selectedChaper}
+          highlights={highlights}
+          setSelectHighlights={setSelectHighlights}
+        />
+      </Stack>
+      <form method="POST" onSubmit={handleSelectHighlight}>
+        <FormGroup>
+          {Object.values(selectHighlights).map((highlight, index) => {
+            return (
+              <FormControlLabel
+                control={
+                  <Checkbox name="selectedHighlight" value={highlight} />
+                }
+                label={highlight}
+              />
+            );
+          })}
+        </FormGroup>
+        <Button type="submit" variant="contained">
+          Generate Prompt
+        </Button>
       </form>
       <div>
         <p>{generatedPrompt}</p>
-        <button type='button' onClick={copyPrompt}>Copy</button>
+        <Button type="button" onClick={copyPrompt} variant="outlined">
+          Copy
+        </Button>
       </div>
-    </>
-  )
+    </Paper>
+  );
 }
 
-export default App
+export default App;
