@@ -72,12 +72,15 @@ function App() {
         <FormGroup>
           {Object.values(selectHighlights).map((highlight, index) => {
             return (
-              <FormControlLabel
-                control={
-                  <Checkbox name="selectedHighlight" value={highlight} />
-                }
-                label={highlight}
-              />
+              highlight.text
+              ? (
+                <FormControlLabel
+                  control={
+                    <Checkbox name="selectedHighlight" value={highlight} />
+                  }
+                  label={highlight}
+                />
+              ) : null
             );
           })}
         </FormGroup>
