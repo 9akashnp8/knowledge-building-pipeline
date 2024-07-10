@@ -34,7 +34,7 @@ export default function DateSelect({
           ([key, _])=>selectedDate.includes(key)
         )
       )
-      setSelectHighlights(Object.values(selectedHighlights).flat());
+      setSelectHighlights(Object.values(selectedHighlights).flat().map(v => ({text: v, checked: false})));
     } else {
       setSelectHighlights([]);
     }
