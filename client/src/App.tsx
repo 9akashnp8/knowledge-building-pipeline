@@ -1,20 +1,21 @@
-import { useState, useEffect, MouseEvent, SyntheticEvent } from "react";
+import { useState, useEffect, MouseEvent, SyntheticEvent, ChangeEvent } from "react";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack"
 import Paper from "@mui/material/Paper"
+import Box from "@mui/material/Box"
 
 import ChapterSelect from "./components/ChapterSelect";
 import DateSelect from "./components/DateSelect";
-import type { HighlighAPIResponse } from "./types";
+import type { HighlighAPIResponse, FilteredHighlights } from "./types";
 
 function App() {
   const [highlights, setHighlights] = useState<HighlighAPIResponse | {}>({});
   const [selectedChaper, setSelectedChaper] = useState<string>("");
   const [generatedPrompt, setGeneratedPrompt] = useState<string>("");
-  const [selectHighlights, setSelectHighlights] = useState<[]>([]);
+  const [selectHighlights, setSelectHighlights] = useState<FilteredHighlights>([]);
 
   useEffect(() => {
     async function getHighlights() {
@@ -54,9 +55,16 @@ function App() {
     });
   }
 
+  function handleSelectAll(e: ChangeEvent) {
+    e.preventDefault()
+    const checked = (e.target as HTMLInputElement).checked
+    const selected = selectHighlights.map(x => ({ text: x.text, checked}))
+    setSelectHighlights(selected)
+  }
+
   return (
     <Paper variant="elevation" sx={{ margin: "40px", padding: "20px", height: "90vh", overflow: "auto"}}>
-      <Stack direction={"row"} gap={2}>
+      <Stack direction={"row"} gap={2} alignItems={"center"}>
         <ChapterSelect
           chapters={Object.keys(highlights)}
           setSelectedChaper={setSelectedChaper}
@@ -67,17 +75,28 @@ function App() {
           highlights={highlights}
           setSelectHighlights={setSelectHighlights}
         />
+        <Box>
+          <FormControlLabel
+            control={
+              <Checkbox name="selectAll" onChange={handleSelectAll} />
+            }
+            label="Select All"
+          />
+        </Box>
       </Stack>
       <form method="POST" onSubmit={handleSelectHighlight}>
         <FormGroup>
           {Object.values(selectHighlights).map((highlight, index) => {
             return (
-              <FormControlLabel
-                control={
-                  <Checkbox name="selectedHighlight" value={highlight} />
-                }
-                label={highlight}
-              />
+              highlight.text
+              ? (
+                <FormControlLabel
+                  control={
+                    <Checkbox name="selectedHighlight" checked={highlight.checked} value={highlight.text} />
+                  }
+                  label={highlight.text}
+                />
+              ) : null
             );
           })}
         </FormGroup>
