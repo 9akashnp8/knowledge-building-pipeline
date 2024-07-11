@@ -62,6 +62,19 @@ function App() {
     setSelectHighlights(selected)
   }
 
+  function handleSelectSingle(e: ChangeEvent) {
+    e.preventDefault()
+    const text = (e.target as HTMLInputElement).value
+    const checked = (e.target as HTMLInputElement).checked
+    const highlights = selectHighlights.map((highlight) => {
+      if (highlight.text == text) {
+        highlight.checked = checked
+      }
+      return highlight
+    })
+    setSelectHighlights(highlights)
+  }
+
   return (
     <Paper variant="elevation" sx={{ margin: "40px", padding: "20px", height: "90vh", overflow: "auto"}}>
       <Stack direction={"row"} gap={2} alignItems={"center"}>
@@ -92,7 +105,7 @@ function App() {
               ? (
                 <FormControlLabel
                   control={
-                    <Checkbox name="selectedHighlight" checked={highlight.checked} value={highlight.text} />
+                    <Checkbox name="selectedHighlight" onChange={handleSelectSingle} checked={highlight.checked} value={highlight.text} />
                   }
                   label={highlight.text}
                 />
